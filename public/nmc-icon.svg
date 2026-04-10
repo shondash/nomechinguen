@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#1B2A1B"/>
+  <text x="256" y="300" text-anchor="middle"
+    font-family="sans-serif" font-weight="900" font-size="160"
+    fill="#F5F1EB" letter-spacing="-8">NMC</text>
+</svg>
