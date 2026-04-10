@@ -991,6 +991,66 @@ function RecursosTab({mobile}) {
 }
 
 // ═══════════════════════════════════════
+// INSTALL BANNER
+// ═══════════════════════════════════════
+function InstallBanner() {
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [installed, setInstalled] = useState(false);
+
+  useEffect(() => {
+    // Check if already installed (standalone mode)
+    if (window.matchMedia("(display-mode: standalone)").matches) {
+      setInstalled(true);
+      return;
+    }
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    window.addEventListener("appinstalled", () => setInstalled(true));
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  if (installed) return null;
+
+  const handleInstall = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") setInstalled(true);
+      setDeferredPrompt(null);
+    }
+  };
+
+  return (
+    <div style={{
+      background: "linear-gradient(135deg, #1B2A1B 0%, #2d4a2d 100%)",
+      color: "#fff",
+      padding: "10px 16px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 12,
+      fontFamily: font,
+      fontSize: 13,
+      cursor: deferredPrompt ? "pointer" : "default"
+    }} onClick={handleInstall}>
+      <span style={{ fontSize: 18 }}>📲</span>
+      <span>{deferredPrompt
+        ? "Instala la app — funciona sin internet"
+        : "Abre en Chrome y toca ⋮ → \"Instalar app\" para usar sin internet"
+      }</span>
+      {deferredPrompt && <button style={{
+        background: "#F5F1EB", color: C.primary, border: "none",
+        borderRadius: 6, padding: "5px 12px", fontWeight: 700,
+        fontFamily: font, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap"
+      }}>Instalar</button>}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════
 // UPDATE TOAST
 // ═══════════════════════════════════════
 function UpdateToast() {
@@ -1089,6 +1149,7 @@ export default function NoMeChinguen() {
 
   return (
     <div style={{fontFamily:font,background:C.bg,color:C.text,minHeight:"100vh"}}>
+      <InstallBanner />
       {/* Header */}
       <div style={{background:`linear-gradient(135deg, ${C.primary} 0%, ${C.primaryHover} 100%)`,padding:mobile?"24px 16px 20px":"36px 56px 32px"}}>
         <div style={{maxWidth:1200,margin:"0 auto",display:"flex",flexDirection:mobile?"column":"row",justifyContent:"space-between",alignItems:mobile?"flex-start":"flex-end",gap:mobile?12:0}}>
