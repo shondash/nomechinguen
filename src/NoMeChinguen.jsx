@@ -999,13 +999,6 @@ export default function NoMeChinguen() {
   const px = mobile ? "16px" : "56px";
   const T = TONE_STRINGS[tone];
 
-  useEffect(() => {
-    const link = document.createElement("link");
-    link.href = "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap";
-    link.rel = "stylesheet";
-    document.head.appendChild(link);
-  }, []);
-
   const ToneToggle = () => (
     <div style={{display:"flex",alignItems:"center",gap:8}}>
       <span style={{fontSize:10,fontWeight:600,color:"#DAA520",fontFamily:mono,letterSpacing:1.5,textTransform:"uppercase"}}>Tono</span>
