@@ -1,6 +1,7 @@
 import { LEGAL_YEAR, SALARIO_MINIMO_DIARIO, UMA_DIARIO, PRIMA_ANTIGUEDAD_TOPE, AGUINALDO_DIAS, PRIMA_VACACIONAL_PCT, PRIMA_DOMINICAL_PCT } from "./constants/legal.js";
 import { toSalarioDia, calcSeniority, getVacationDays, calcPrestaciones, calcFiniquito, calcLiquidacion, calcSDI } from "./utils/calculations.js";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useRegisterSW } from "virtual:pwa-register/react";
 
 // ── Responsive hook ──
 function useIsMobile(breakpoint = 768) {
@@ -990,6 +991,77 @@ function RecursosTab({mobile}) {
 }
 
 // ═══════════════════════════════════════
+// UPDATE TOAST
+// ═══════════════════════════════════════
+function UpdateToast() {
+  const {
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW();
+
+  // Auto-dismiss after 15 seconds per D-06
+  useEffect(() => {
+    if (!needRefresh) return;
+    const timer = setTimeout(() => setNeedRefresh(false), 15000);
+    return () => clearTimeout(timer);
+  }, [needRefresh, setNeedRefresh]);
+
+  if (!needRefresh) return null;
+
+  return (
+    <div style={{
+      position: "fixed",
+      bottom: 16,
+      left: "50%",
+      transform: "translateX(-50%)",
+      background: C.primary,
+      color: "#fff",
+      borderRadius: 10,
+      padding: "12px 20px",
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+      zIndex: 9999,
+      fontFamily: font,
+      fontSize: 14,
+      maxWidth: 360,
+      width: "calc(100% - 32px)"
+    }}>
+      <span style={{ flex: 1 }}>Nueva versión disponible</span>
+      <button
+        onClick={() => updateServiceWorker(true)}
+        style={{
+          background: "#fff",
+          color: C.primary,
+          border: "none",
+          borderRadius: 6,
+          padding: "6px 14px",
+          fontWeight: 700,
+          cursor: "pointer",
+          fontFamily: font,
+          fontSize: 13
+        }}
+      >
+        Actualizar
+      </button>
+      <button
+        onClick={() => setNeedRefresh(false)}
+        style={{
+          background: "transparent",
+          color: "#fff",
+          border: "none",
+          fontSize: 18,
+          cursor: "pointer",
+          lineHeight: 1,
+          padding: 4
+        }}
+      >&#x2715;</button>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════
 // MAIN
 // ═══════════════════════════════════════
 export default function NoMeChinguen() {
@@ -1098,6 +1170,7 @@ export default function NoMeChinguen() {
       <div style={{borderTop:`1px solid ${C.border}`,padding:`20px ${px}`,textAlign:"center",fontSize:12,color:C.textSec}}>
         {T.footer}
       </div>
+      <UpdateToast />
     </div>
   );
 }
