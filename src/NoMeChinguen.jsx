@@ -996,9 +996,9 @@ function RecursosTab({mobile}) {
 function InstallBanner() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [installed, setInstalled] = useState(false);
+  const [showTip, setShowTip] = useState(false);
 
   useEffect(() => {
-    // Check if already installed (standalone mode)
     if (window.matchMedia("(display-mode: standalone)").matches) {
       setInstalled(true);
       return;
@@ -1020,33 +1020,41 @@ function InstallBanner() {
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === "accepted") setInstalled(true);
       setDeferredPrompt(null);
+    } else {
+      setShowTip(true);
+      setTimeout(() => setShowTip(false), 6000);
     }
   };
 
   return (
-    <div style={{
-      background: "linear-gradient(135deg, #1B2A1B 0%, #2d4a2d 100%)",
-      color: "#fff",
-      padding: "10px 16px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 12,
-      fontFamily: font,
-      fontSize: 13,
-      cursor: deferredPrompt ? "pointer" : "default"
-    }} onClick={handleInstall}>
-      <span style={{ fontSize: 18 }}>📲</span>
-      <span>{deferredPrompt
-        ? "Instala la app — funciona sin internet"
-        : "Abre en Chrome y toca ⋮ → \"Instalar app\" para usar sin internet"
-      }</span>
-      {deferredPrompt && <button style={{
-        background: "#F5F1EB", color: C.primary, border: "none",
-        borderRadius: 6, padding: "5px 12px", fontWeight: 700,
-        fontFamily: font, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap"
-      }}>Instalar</button>}
-    </div>
+    <>
+      <div style={{
+        background: "linear-gradient(135deg, #1B2A1B 0%, #2d4a2d 100%)",
+        color: "#fff",
+        padding: "10px 16px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 12,
+        fontFamily: font,
+        fontSize: 13,
+        cursor: "pointer"
+      }} onClick={handleInstall}>
+        <span style={{ fontSize: 18 }}>📲</span>
+        <span>Instala la app — funciona sin internet</span>
+        <button style={{
+          background: "#F5F1EB", color: C.primary, border: "none",
+          borderRadius: 6, padding: "5px 12px", fontWeight: 700,
+          fontFamily: font, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap"
+        }}>Instalar</button>
+      </div>
+      {showTip && <div style={{
+        background: "#FFF3CD", color: "#664D03", padding: "10px 16px",
+        fontFamily: font, fontSize: 13, textAlign: "center", lineHeight: 1.5
+      }}>
+        En tu navegador, toca <strong>⋮</strong> (menú) → <strong>"Instalar app"</strong> o <strong>"Añadir a pantalla de inicio"</strong>
+      </div>}
+    </>
   );
 }
 
