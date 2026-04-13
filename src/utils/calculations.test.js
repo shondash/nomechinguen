@@ -12,6 +12,8 @@ import {
   calcPrestaciones,
   calcFiniquito,
   calcLiquidacion,
+  calcInfonavitCredit,
+  calcComparacion,
 } from './calculations.js'
 
 // ── toSalarioDia ──
@@ -188,5 +190,117 @@ describe('calcLiquidacion', () => {
     const result = calcLiquidacion(800, seniority)
     const expectedPrimaAnt = 630.08 * 12 * 3
     expect(result.primaAnt).toBeCloseTo(expectedPrimaAnt, 2)
+  })
+})
+
+// ── calcInfonavitCredit ──
+// Legal basis: Ley del Infonavit Art. 29-II — patron contributes 5% of SDI annually
+describe('calcInfonavitCredit', () => {
+  it('returns 0 when completedYears is 0', () => {
+    expect(calcInfonavitCredit(500, 0)).toBe(0)
+  })
+  it('returns 0 when completedYears is negative', () => {
+    expect(calcInfonavitCredit(500, -1)).toBe(0)
+  })
+  it('salarioDia=500, completedYears=5: accumulated = SDI * 365 * 0.05 * 5', () => {
+    // SDI for 500, 5 years: vacDays=20, fi = 1 + 15/365 + (20*0.25/365)
+    const fi = 1 + 15 / 365 + (20 * 0.25 / 365)
+    const sdi = 500 * fi
+    const expected = sdi * 365 * 0.05 * 5
+    expect(calcInfonavitCredit(500, 5)).toBeCloseTo(expected, 2)
+  })
+  it('salarioDia=315.04, completedYears=1: positive number', () => {
+    const result = calcInfonavitCredit(315.04, 1)
+    expect(result).toBeGreaterThan(0)
+  })
+  it('invalid string input for salary returns 0 (0 years guard)', () => {
+    // With completedYears=0, always returns 0 regardless of salary
+    expect(calcInfonavitCredit('abc', 0)).toBe(0)
+  })
+  it('result is proportional to completedYears (linear model)', () => {
+    const one = calcInfonavitCredit(500, 1)
+    const five = calcInfonavitCredit(500, 5)
+    // Not exact 5x because SDI also depends on years (vacation days change)
+    // But for years 2-5 vacDays=20 (same), so 5yr should be > 1yr
+    expect(five).toBeGreaterThan(one)
+  })
+})
+
+// ── calcComparacion ──
+// Verifies comparison of real vs registered salary across all six concepts
+describe('calcComparacion', () => {
+  const seniority3 = { completedYears: 3, totalMonths: 36, daysInCurrentYear: 0, daysInSeniorityYear: 0 }
+
+  it('aguinaldo real = 500 * 15 = 7500', () => {
+    const result = calcComparacion(500, 315.04, seniority3)
+    expect(result.real.aguinaldo).toBeCloseTo(500 * 15)  // 7500
+  })
+
+  it('aguinaldo registrado = 315.04 * 15 = 4725.60', () => {
+    const result = calcComparacion(500, 315.04, seniority3)
+    expect(result.registrado.aguinaldo).toBeCloseTo(315.04 * 15, 2)  // 4725.60
+  })
+
+  it('diferencia.aguinaldo = 7500 - 4725.60 = 2774.40', () => {
+    const result = calcComparacion(500, 315.04, seniority3)
+    expect(result.diferencia.aguinaldo).toBeCloseTo(500 * 15 - 315.04 * 15, 2)  // 2774.40
+  })
+
+  it('returns all six concepts in real and registrado objects', () => {
+    const result = calcComparacion(500, 315.04, seniority3)
+    const fields = ['aguinaldo', 'vacPago', 'primaVac', 'liq3meses', 'liq20dias', 'primaAnt', 'infonavit']
+    for (const f of fields) {
+      expect(result.real).toHaveProperty(f)
+      expect(result.registrado).toHaveProperty(f)
+      expect(result.diferencia).toHaveProperty(f)
+    }
+  })
+
+  it('diferencia.total equals sum of all individual differences', () => {
+    const result = calcComparacion(500, 315.04, seniority3)
+    const { aguinaldo, vacPago, primaVac, liq3meses, liq20dias, primaAnt, infonavit } = result.diferencia
+    const expectedTotal = aguinaldo + vacPago + primaVac + liq3meses + liq20dias + primaAnt + infonavit
+    expect(result.diferencia.total).toBeCloseTo(expectedTotal, 2)
+  })
+
+  it('all diferencias are positive when salarioReal > salarioRegistrado', () => {
+    const result = calcComparacion(500, 315.04, seniority3)
+    const fields = ['aguinaldo', 'vacPago', 'primaVac', 'liq3meses', 'liq20dias', 'primaAnt', 'infonavit']
+    for (const f of fields) {
+      expect(result.diferencia[f]).toBeGreaterThan(0)
+    }
+    expect(result.diferencia.total).toBeGreaterThan(0)
+  })
+
+  it('edge case: salarioReal === salarioRegistrado -> all diferencias are 0', () => {
+    const result = calcComparacion(400, 400, seniority3)
+    const fields = ['aguinaldo', 'vacPago', 'primaVac', 'liq3meses', 'liq20dias', 'primaAnt', 'infonavit']
+    for (const f of fields) {
+      expect(result.diferencia[f]).toBeCloseTo(0, 5)
+    }
+    expect(result.diferencia.total).toBeCloseTo(0, 5)
+  })
+
+  it('liq3meses real = 500 * 90 = 45000 (Art. 48)', () => {
+    const result = calcComparacion(500, 315.04, seniority3)
+    expect(result.real.liq3meses).toBeCloseTo(500 * 90)
+  })
+
+  it('liq20dias real = 500 * 20 * 3 = 30000 (Art. 50)', () => {
+    const result = calcComparacion(500, 315.04, seniority3)
+    expect(result.real.liq20dias).toBeCloseTo(500 * 20 * 3)
+  })
+
+  it('infonavit real > 0 for completedYears=3', () => {
+    const result = calcComparacion(500, 315.04, seniority3)
+    expect(result.real.infonavit).toBeGreaterThan(0)
+  })
+
+  it('infonavit = 0 when completedYears = 0', () => {
+    const seniority0 = { completedYears: 0, totalMonths: 0, daysInCurrentYear: 0, daysInSeniorityYear: 0 }
+    const result = calcComparacion(500, 315.04, seniority0)
+    expect(result.real.infonavit).toBe(0)
+    expect(result.registrado.infonavit).toBe(0)
+    expect(result.diferencia.infonavit).toBe(0)
   })
 })
