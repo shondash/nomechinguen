@@ -741,8 +741,11 @@ function CalcTab({mobile}) {
         // Registered salary input card
         const registradoCard = (
           <div style={{marginBottom:20,padding:16,background:C.surface,border:`1px solid ${C.border}`,borderRadius:10}}>
+            <div style={{fontSize:12,fontFamily:mono,color:C.info,marginBottom:10}}>
+              Tu salario diario: {fmt(salarioDia)} ({salarioAmt} {frequency})
+            </div>
             <label style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:10}}>
-              Salario registrado en el IMSS (diario)
+              Salario diario registrado en el IMSS
             </label>
             <label style={{fontSize:13,color:C.textSec,cursor:"pointer",display:"flex",alignItems:"center",gap:8,marginBottom:usaMinimo?0:12}}>
               <input type="checkbox" checked={usaMinimo}
