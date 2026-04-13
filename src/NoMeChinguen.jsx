@@ -1282,6 +1282,17 @@ export default function NoMeChinguen() {
   const px = mobile ? "16px" : "56px";
   const T = TONE_STRINGS[tone];
 
+  useEffect(() => {
+    const titles = {
+      checa: "Checador de Derechos Laborales — No Me Chinguen",
+      guia: "Guía de la Ley Federal del Trabajo — No Me Chinguen",
+      calc: "Calculadora de Liquidación y Horas Extra — No Me Chinguen",
+      faq: "Preguntas Frecuentes — No Me Chinguen",
+      recursos: "Recursos y Contactos Laborales — No Me Chinguen"
+    };
+    document.title = titles[tab] || "No Me Chinguen — Derechos Laborales México";
+  }, [tab]);
+
   const ToneToggle = () => (
     <div style={{display:"flex",alignItems:"center",gap:8}}>
       <span style={{fontSize:10,fontWeight:600,color:"#DAA520",fontFamily:mono,letterSpacing:1.5,textTransform:"uppercase"}}>Tono</span>
@@ -1333,7 +1344,7 @@ export default function NoMeChinguen() {
               onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.2)";e.currentTarget.style.borderColor="rgba(255,255,255,0.35)"}}
               onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.1)";e.currentTarget.style.borderColor="rgba(255,255,255,0.25)"}}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Descargar volante en PDF">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="7 10 12 15 17 10"/>
                 <line x1="12" y1="15" x2="12" y2="3"/>
@@ -1351,10 +1362,10 @@ export default function NoMeChinguen() {
       </div>
 
       {/* Nav bar */}
-      <div style={{background:C.surface,borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:10}}>
+      <nav aria-label="Secciones principales" style={{background:C.surface,borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:10}}>
         <div style={{maxWidth:1200,margin:"0 auto",display:"flex",gap:0,padding:`0 ${px}`,overflowX:mobile?"auto":"visible",WebkitOverflowScrolling:"touch"}}>
           {NAV.map(n=>(
-            <button key={n.id} onClick={()=>setTab(n.id)} style={{
+            <button key={n.id} onClick={()=>setTab(n.id)} aria-current={tab===n.id?"page":undefined} style={{
               padding:mobile?"12px 16px":"14px 24px",fontSize:13,fontWeight:tab===n.id?700:500,
               color:tab===n.id?C.primary:C.textSec,
               background:"transparent",border:"none",
@@ -1367,7 +1378,7 @@ export default function NoMeChinguen() {
             </button>
           ))}
         </div>
-      </div>
+      </nav>
 
       {/* Content */}
       <div style={{maxWidth:1200,margin:"0 auto",padding:tab==="guia"?"0":`${mobile?"20px":"36px"} ${px} ${mobile?"40px":"80px"}`}}>
@@ -1379,9 +1390,9 @@ export default function NoMeChinguen() {
       </div>
 
       {/* Footer */}
-      <div style={{borderTop:`1px solid ${C.border}`,padding:`20px ${px}`,textAlign:"center",fontSize:12,color:C.textSec}}>
+      <footer style={{borderTop:`1px solid ${C.border}`,padding:`20px ${px}`,textAlign:"center",fontSize:12,color:C.textSec}}>
         {T.footer}
-      </div>
+      </footer>
       <UpdateToast />
     </div>
   );
