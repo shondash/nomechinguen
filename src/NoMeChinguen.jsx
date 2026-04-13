@@ -49,6 +49,18 @@ const SKIP_LINK_STYLE = {
   fontFamily: font,
 };
 
+// Focus ring — context-aware per D-01, D-03, A11Y-02
+// Light context: C.primary #163A5F = 11.6:1 vs white (PASSES 3:1)
+// Dark context: gold #DAA520 = 5.2:1 vs header #163A5F (PASSES 3:1)
+const applyFocusLight = {
+  onFocus: e => { e.currentTarget.style.outline = "none"; e.currentTarget.style.boxShadow = "0 0 0 2px #163A5F"; },
+  onBlur: e => { e.currentTarget.style.boxShadow = ""; },
+};
+const applyFocusDark = {
+  onFocus: e => { e.currentTarget.style.outline = "none"; e.currentTarget.style.boxShadow = "0 0 0 2px #DAA520"; },
+  onBlur: e => { e.currentTarget.style.boxShadow = ""; },
+};
+
 // ── Data ──
 const VACATION_TABLE = [[1,12],[2,14],[3,16],[4,18],[5,20],["6–10",22],["11–15",24],["16–20",26],["21–25",28],["26–30",30],["31–35",32]];
 const JORNADA_TABLE = [["Diurna","6:00–20:00","8 hrs (Art. 60)"],["Nocturna","20:00–6:00","7 hrs (Art. 61)"],["Mixta","Ambas","7.5 hrs (Art. 62)"]];
@@ -222,11 +234,12 @@ function ChecaTab({onNav, mobile, tone}) {
                     return (
                       <button key={opt} onClick={()=>toggle(i,opt)}
                         aria-label={`${opt==="si"?"Sí":"No"} — ${item.q}`}
+                        {...applyFocusLight}
                         style={{
                         flex:1,padding:"8px 0",fontSize:14,fontWeight:600,borderRadius:6,cursor:"pointer",
                         border:selected?"none":`1.5px solid ${C.border}`,
                         background:bad?C.error:good?C.success:C.surface,
-                        color:selected?"#fff":C.textSec,transition:"all .15s"
+                        color:selected?"#fff":C.textSec,transition:"all .15s",minHeight:44
                       }}>{opt==="si"?"Sí":"No"}</button>
                     );
                   })}
@@ -255,7 +268,7 @@ function ChecaTab({onNav, mobile, tone}) {
             <div style={{fontSize:18,fontWeight:700,color:C.error}}>{problems} problema{problems!==1&&"s"} detectado{problems!==1&&"s"}</div>
             <div style={{fontSize:14,color:C.text,marginTop:4}}>Llama a PROFEDET: <strong>800 911 7877</strong> (gratis, confidencial)</div>
           </div>
-          <button onClick={()=>onNav("calc")} style={{background:C.primary,color:"#fff",border:"none",borderRadius:8,padding:"12px 28px",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:font,whiteSpace:"nowrap"}}>Ir a la Calculadora</button>
+          <button onClick={()=>onNav("calc")} {...applyFocusLight} style={{background:C.primary,color:"#fff",border:"none",borderRadius:8,padding:"12px 28px",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:font,whiteSpace:"nowrap",minHeight:44}}>Ir a la Calculadora</button>
         </div>
       )}
     </div>
@@ -438,11 +451,11 @@ function GuiaTab({mobile, tone}) {
         {/* Horizontal scrollable chapter tabs */}
         <div style={{display:"flex",gap:8,overflowX:"auto",WebkitOverflowScrolling:"touch",paddingBottom:12,marginBottom:16}}>
           {CHAPTERS.map(c=>(
-            <button key={c.id} onClick={()=>setActive(c.id)} style={{
+            <button key={c.id} onClick={()=>setActive(c.id)} {...applyFocusLight} style={{
               flexShrink:0,padding:"8px 16px",fontSize:12,fontWeight:active===c.id?700:500,
               background:active===c.id?C.primary:"transparent",color:active===c.id?"#fff":C.textSec,
               border:`1px solid ${active===c.id?C.primary:C.border}`,borderRadius:20,
-              cursor:"pointer",fontFamily:font,whiteSpace:"nowrap",transition:"all .12s"
+              cursor:"pointer",fontFamily:font,whiteSpace:"nowrap",transition:"all .12s",minHeight:44
             }}>{c.title}</button>
           ))}
         </div>
@@ -459,13 +472,13 @@ function GuiaTab({mobile, tone}) {
       {/* Chapter sidebar */}
       <div style={{width:240,flexShrink:0,borderRight:`1px solid ${C.border}`,paddingTop:8}}>
         {CHAPTERS.map(c=>(
-          <button key={c.id} onClick={()=>setActive(c.id)} style={{
+          <button key={c.id} onClick={()=>setActive(c.id)} {...applyFocusLight} style={{
             display:"block",width:"100%",textAlign:"left",
             padding:"10px 20px",cursor:"pointer",
             background:active===c.id?C.surface:"transparent",
             borderLeft:active===c.id?`3px solid ${C.primary}`:"3px solid transparent",
             borderTop:"none",borderRight:"none",borderBottom:"none",
-            fontFamily:font,transition:"all .12s"
+            fontFamily:font,transition:"all .12s",minHeight:44
           }}>
             <div style={{fontFamily:mono,fontSize:9,color:C.secondary,letterSpacing:1.2,textTransform:"uppercase"}}>Cap. {c.ch}</div>
             <div style={{fontSize:13,fontWeight:active===c.id?700:500,color:active===c.id?C.primary:C.textSec,marginTop:1}}>{c.title}</div>
@@ -523,7 +536,7 @@ function CalcTab({mobile}) {
   };
 
   const mBtn = (m,label) => (
-    <button onClick={()=>setMode(m)} style={{padding:"12px 32px",fontSize:14,fontWeight:mode===m?700:400,background:mode===m?C.primary:"transparent",color:mode===m?"#fff":C.textSec,border:`1.5px solid ${mode===m?C.primary:C.border}`,borderRadius:8,cursor:"pointer",fontFamily:font,transition:"all .15s"}}>{label}</button>
+    <button onClick={()=>setMode(m)} {...applyFocusLight} style={{padding:"12px 32px",fontSize:14,fontWeight:mode===m?700:400,background:mode===m?C.primary:"transparent",color:mode===m?"#fff":C.textSec,border:`1.5px solid ${mode===m?C.primary:C.border}`,borderRadius:8,cursor:"pointer",fontFamily:font,transition:"all .15s",minHeight:44}}>{label}</button>
   );
 
   // Month options for start date dropdown
@@ -553,12 +566,12 @@ function CalcTab({mobile}) {
         <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"1fr 1fr",gap:16,marginBottom:16}}>
           <div>
             <label htmlFor="calc-salary" style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>{usaNeto?"Tu salario neto ($)":"Tu salario bruto ($)"}</label>
-            <input id="calc-salary" type="text" inputMode="decimal" value={salarioAmt} onChange={e=>{const v=e.target.value.replace(/[^0-9.]/g,"");setSalarioAmt(v);}} placeholder={usaNeto?"Ej: 10000":"Ej: 12000"} aria-label={usaNeto?"Salario neto en pesos":"Salario bruto en pesos"} style={{...inp,...(salarioAmt&&!parseFloat(salarioAmt)?{borderColor:C.error}:{})}}/>
+            <input id="calc-salary" type="text" inputMode="decimal" value={salarioAmt} onChange={e=>{const v=e.target.value.replace(/[^0-9.]/g,"");setSalarioAmt(v);}} placeholder={usaNeto?"Ej: 10000":"Ej: 12000"} aria-label={usaNeto?"Salario neto en pesos":"Salario bruto en pesos"} {...applyFocusLight} style={{...inp,...(salarioAmt&&!parseFloat(salarioAmt)?{borderColor:C.error}:{})}}/>
             {salarioAmt&&!parseFloat(salarioAmt)&&<div style={{fontSize:12,color:C.error,marginTop:4}}>Ingresa solo numeros</div>}
           </div>
           <div>
             <label htmlFor="calc-frequency" style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>Frecuencia de pago</label>
-            <select id="calc-frequency" aria-label="Frecuencia de pago" value={frequency} onChange={e=>setFrequency(e.target.value)} style={{...inp,appearance:"auto"}}>
+            <select id="calc-frequency" aria-label="Frecuencia de pago" value={frequency} onChange={e=>setFrequency(e.target.value)} {...applyFocusLight} style={{...inp,appearance:"auto"}}>
               <option value="diario">Diario</option>
               <option value="semanal">Semanal</option>
               <option value="quincenal">Quincenal</option>
@@ -569,14 +582,14 @@ function CalcTab({mobile}) {
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
           <div>
             <label htmlFor="calc-start-month" style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>Mes de ingreso</label>
-            <select id="calc-start-month" aria-label="Mes de ingreso" value={startMonth} onChange={e=>setStartMonth(e.target.value)} style={{...inp,appearance:"auto"}}>
+            <select id="calc-start-month" aria-label="Mes de ingreso" value={startMonth} onChange={e=>setStartMonth(e.target.value)} {...applyFocusLight} style={{...inp,appearance:"auto"}}>
               <option value="">-- Mes --</option>
               {MONTHS.map((m,i)=><option key={i} value={i+1}>{m}</option>)}
             </select>
           </div>
           <div>
             <label htmlFor="calc-start-year" style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>Año de ingreso</label>
-            <select id="calc-start-year" aria-label="Anio de ingreso" value={startYear} onChange={e=>setStartYear(e.target.value)} style={{...inp,appearance:"auto"}}>
+            <select id="calc-start-year" aria-label="Anio de ingreso" value={startYear} onChange={e=>setStartYear(e.target.value)} {...applyFocusLight} style={{...inp,appearance:"auto"}}>
               <option value="">-- Año --</option>
               {YEARS.map(y=><option key={y} value={y}>{y}</option>)}
             </select>
@@ -629,7 +642,7 @@ function CalcTab({mobile}) {
           <div>
             {/* Contractual benefits for salary integration — Art. 84 */}
             <div style={{marginBottom:20}}>
-              <button onClick={()=>setShowContractual(!showContractual)} style={{fontSize:13,color:C.primary,background:"transparent",border:"none",cursor:"pointer",fontFamily:font,padding:0,fontWeight:600}}>
+              <button onClick={()=>setShowContractual(!showContractual)} {...applyFocusLight} style={{fontSize:13,color:C.primary,background:"transparent",border:"none",cursor:"pointer",fontFamily:font,padding:0,fontWeight:600}}>
                 {showContractual ? "− Prestaciones contractuales (Art. 84)" : "+ Agregar prestaciones contractuales (Art. 84)"}
               </button>
               {showContractual && (
@@ -639,10 +652,10 @@ function CalcTab({mobile}) {
                     <div key={i} style={{display:"flex",gap:8,marginBottom:8,alignItems:"center"}}>
                       <input type="text" placeholder="Ej: Vales de despensa" value={item.label} onChange={e=>{const next=[...contractualItems];next[i]={...next[i],label:e.target.value};setContractualItems(next);}} style={{...inp,flex:1}}/>
                       <input type="text" inputMode="decimal" placeholder="$/mes" value={item.amount} onChange={e=>{const next=[...contractualItems];next[i]={...next[i],amount:e.target.value.replace(/[^0-9.]/g,"")};setContractualItems(next);}} style={{...inp,width:100,flexShrink:0}}/>
-                      <button onClick={()=>setContractualItems(contractualItems.filter((_,j)=>j!==i))} style={{padding:"8px 12px",fontSize:14,color:C.error,background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,cursor:"pointer",fontFamily:font,flexShrink:0}}>x</button>
+                      <button onClick={()=>setContractualItems(contractualItems.filter((_,j)=>j!==i))} {...applyFocusLight} style={{padding:"8px 12px",fontSize:14,color:C.error,background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,cursor:"pointer",fontFamily:font,flexShrink:0,minHeight:44,minWidth:44}}>x</button>
                     </div>
                   ))}
-                  <button onClick={()=>setContractualItems([...contractualItems,{label:"",amount:""}])} style={{fontSize:13,color:C.primary,background:"transparent",border:"none",cursor:"pointer",fontFamily:font,padding:"4px 0"}}>+ Agregar otra</button>
+                  <button onClick={()=>setContractualItems([...contractualItems,{label:"",amount:""}])} {...applyFocusLight} style={{fontSize:13,color:C.primary,background:"transparent",border:"none",cursor:"pointer",fontFamily:font,padding:"4px 0"}}>+ Agregar otra</button>
                 </div>
               )}
               {usaSalarioIntegrado && (
@@ -778,6 +791,7 @@ function CalcTab({mobile}) {
                 onChange={e=>setSalarioRegistrado(e.target.value.replace(/[^0-9.]/g,""))}
                 placeholder="Ej: 200"
                 aria-label="Salario diario registrado en el IMSS"
+                {...applyFocusLight}
                 style={inp}/>
             )}
           </div>
@@ -891,11 +905,11 @@ function CalcTab({mobile}) {
             <div>
               <div style={{marginBottom:16}}>
                 <label htmlFor="calc-horas-extra" style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>Horas extra en la semana</label>
-                <input id="calc-horas-extra" type="number" value={horasExtra} onChange={e=>setHorasExtra(e.target.value)} placeholder="Ej: 12" aria-label="Horas extra trabajadas en la semana" style={inp}/>
+                <input id="calc-horas-extra" type="number" value={horasExtra} onChange={e=>setHorasExtra(e.target.value)} placeholder="Ej: 12" aria-label="Horas extra trabajadas en la semana" {...applyFocusLight} style={inp}/>
               </div>
               <div style={{marginBottom:16}}>
                 <label htmlFor="calc-jornada" style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>Tipo de jornada</label>
-                <select id="calc-jornada" aria-label="Tipo de jornada laboral" value={jornada} onChange={e=>setJornada(e.target.value)} style={{...inp,appearance:"auto"}}>
+                <select id="calc-jornada" aria-label="Tipo de jornada laboral" value={jornada} onChange={e=>setJornada(e.target.value)} {...applyFocusLight} style={{...inp,appearance:"auto"}}>
                   <option value="8">Diurna (8 hrs)</option>
                   <option value="7">Nocturna (7 hrs)</option>
                   <option value="7.5">Mixta (7.5 hrs)</option>
@@ -913,7 +927,7 @@ function CalcTab({mobile}) {
               </div>
               <div style={{marginBottom:16}}>
                 <label htmlFor="calc-ptu" style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>PTU recibida (opcional)</label>
-                <input id="calc-ptu" type="number" value={ptuAmt} onChange={e=>setPtuAmt(e.target.value)} placeholder="Monto de tu ultimo recibo de PTU" aria-label="Monto de PTU recibida" style={inp}/>
+                <input id="calc-ptu" type="number" value={ptuAmt} onChange={e=>setPtuAmt(e.target.value)} placeholder="Monto de tu ultimo recibo de PTU" aria-label="Monto de PTU recibida" {...applyFocusLight} style={inp}/>
                 {(!ptuAmt || parseFloat(ptuAmt)===0) && (
                   <Callout type="info">La PTU es el 10% de las utilidades de tu empresa, repartido entre todos los trabajadores. Se paga en mayo. Si tu empresa tuvo ganancias, tienes derecho a recibirla. Pide tu comprobante de pago de PTU.</Callout>
                 )}
@@ -972,8 +986,8 @@ function CalcTab({mobile}) {
               <div>
                 {/* Annual/monthly toggle — D-11 */}
                 <div style={{display:"flex",gap:8,marginBottom:12}}>
-                  <button onClick={()=>setViewMode("anual")} style={{padding:"6px 16px",fontSize:12,fontWeight:viewMode==="anual"?700:400,background:viewMode==="anual"?C.primary:"transparent",color:viewMode==="anual"?"#fff":C.textSec,border:`1px solid ${viewMode==="anual"?C.primary:C.border}`,borderRadius:6,cursor:"pointer",fontFamily:font}}>Anual</button>
-                  <button onClick={()=>setViewMode("mensual")} style={{padding:"6px 16px",fontSize:12,fontWeight:viewMode==="mensual"?700:400,background:viewMode==="mensual"?C.primary:"transparent",color:viewMode==="mensual"?"#fff":C.textSec,border:`1px solid ${viewMode==="mensual"?C.primary:C.border}`,borderRadius:6,cursor:"pointer",fontFamily:font}}>Mensual</button>
+                  <button onClick={()=>setViewMode("anual")} {...applyFocusLight} style={{padding:"6px 16px",fontSize:12,fontWeight:viewMode==="anual"?700:400,background:viewMode==="anual"?C.primary:"transparent",color:viewMode==="anual"?"#fff":C.textSec,border:`1px solid ${viewMode==="anual"?C.primary:C.border}`,borderRadius:6,cursor:"pointer",fontFamily:font,minHeight:44}}>Anual</button>
+                  <button onClick={()=>setViewMode("mensual")} {...applyFocusLight} style={{padding:"6px 16px",fontSize:12,fontWeight:viewMode==="mensual"?700:400,background:viewMode==="mensual"?C.primary:"transparent",color:viewMode==="mensual"?"#fff":C.textSec,border:`1px solid ${viewMode==="mensual"?C.primary:C.border}`,borderRadius:6,cursor:"pointer",fontFamily:font,minHeight:44}}>Mensual</button>
                 </div>
 
                 {/* Results card */}
@@ -1048,7 +1062,8 @@ function CalcTab({mobile}) {
                   {!showContractual ? (
                     <button
                       onClick={()=>{setShowContractual(true);setContractualItems([{label:"",amount:""}]);}}
-                      style={{width:"100%",padding:"12px 16px",fontSize:14,color:C.textSec,background:"transparent",border:`1.5px dashed ${C.border}`,borderRadius:8,cursor:"pointer",fontFamily:font}}
+                      {...applyFocusLight}
+                      style={{width:"100%",padding:"12px 16px",fontSize:14,color:C.textSec,background:"transparent",border:`1.5px dashed ${C.border}`,borderRadius:8,cursor:"pointer",fontFamily:font,minHeight:44}}
                     >+ Agregar prestaciones contractuales</button>
                   ) : (
                     <div style={{background:C.bg,border:`1px solid ${C.border}`,borderRadius:8,padding:16}}>
@@ -1069,10 +1084,10 @@ function CalcTab({mobile}) {
                             placeholder="$ monto mensual"
                             style={{...inp,flex:1}}
                           />
-                          <button onClick={()=>setContractualItems(contractualItems.filter((_,j)=>j!==i))} style={{padding:"8px 12px",fontSize:14,color:C.error,background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,cursor:"pointer",fontFamily:font,flexShrink:0}}>x</button>
+                          <button onClick={()=>setContractualItems(contractualItems.filter((_,j)=>j!==i))} {...applyFocusLight} style={{padding:"8px 12px",fontSize:14,color:C.error,background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,cursor:"pointer",fontFamily:font,flexShrink:0,minHeight:44,minWidth:44}}>x</button>
                         </div>
                       ))}
-                      <button onClick={()=>setContractualItems([...contractualItems,{label:"",amount:""}])} style={{fontSize:13,color:C.primary,background:"transparent",border:"none",cursor:"pointer",fontFamily:font,padding:"4px 0"}}>+ Agregar otra</button>
+                      <button onClick={()=>setContractualItems([...contractualItems,{label:"",amount:""}])} {...applyFocusLight} style={{fontSize:13,color:C.primary,background:"transparent",border:"none",cursor:"pointer",fontFamily:font,padding:"4px 0"}}>+ Agregar otra</button>
                     </div>
                   )}
                 </div>
@@ -1112,6 +1127,8 @@ function PreguntasTab({mobile}) {
                   setOpenIdx(openIdx===i?null:i);
                 }
               }}
+              onFocus={e => { e.currentTarget.style.outline = "none"; e.currentTarget.style.boxShadow = "0 0 0 2px #163A5F"; }}
+              onBlur={e => { e.currentTarget.style.boxShadow = ""; }}
               style={{fontSize:15,fontWeight:600,color:C.text,display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,cursor:"pointer"}}
             >
               <span>{q}</span>
@@ -1217,10 +1234,10 @@ function InstallBanner() {
       }}>
         <span style={{ fontSize: 18 }}>📲</span>
         <span>Instala la app — funciona sin internet</span>
-        <button onClick={handleInstall} style={{
+        <button onClick={handleInstall} {...applyFocusDark} style={{
           background: "#F5F1EB", color: C.primary, border: "none",
           borderRadius: 6, padding: "5px 12px", fontWeight: 700,
-          fontFamily: font, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap"
+          fontFamily: font, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap", minHeight: 44
         }}>Instalar</button>
       </div>
       {showTip && <div style={{
@@ -1274,6 +1291,7 @@ function UpdateToast() {
       <span style={{ flex: 1 }}>Nueva versión disponible</span>
       <button
         onClick={() => updateServiceWorker(true)}
+        {...applyFocusDark}
         style={{
           background: "#fff",
           color: C.primary,
@@ -1283,13 +1301,15 @@ function UpdateToast() {
           fontWeight: 700,
           cursor: "pointer",
           fontFamily: font,
-          fontSize: 13
+          fontSize: 13,
+          minHeight: 44
         }}
       >
         Actualizar
       </button>
       <button
         onClick={() => setNeedRefresh(false)}
+        {...applyFocusDark}
         style={{
           background: "transparent",
           color: "#fff",
@@ -1297,7 +1317,9 @@ function UpdateToast() {
           fontSize: 18,
           cursor: "pointer",
           lineHeight: 1,
-          padding: 4
+          padding: 4,
+          minHeight: 44,
+          minWidth: 44
         }}
       >&#x2715;</button>
     </div>
@@ -1329,13 +1351,13 @@ export default function NoMeChinguen() {
     <div style={{display:"flex",alignItems:"center",gap:8}}>
       <span style={{fontSize:10,fontWeight:600,color:"#DAA520",fontFamily:mono,letterSpacing:1.5,textTransform:"uppercase"}}>Tono</span>
       {["directo","tranquilo"].map(t=>(
-        <button key={t} onClick={()=>setTone(t)} aria-pressed={tone===t} style={{
+        <button key={t} onClick={()=>setTone(t)} aria-pressed={tone===t} {...applyFocusDark} style={{
           padding:"5px 14px",fontSize:11,fontWeight:tone===t?700:400,
           background:tone===t?"rgba(255,255,255,0.2)":"transparent",
           color:tone===t?"#fff":"rgba(255,255,255,0.45)",
           border:`1px solid ${tone===t?"rgba(255,255,255,0.35)":"rgba(255,255,255,0.15)"}`,
           borderRadius:20,cursor:"pointer",fontFamily:font,transition:"all .15s",
-          letterSpacing:0.3,textTransform:"capitalize"
+          letterSpacing:0.3,textTransform:"capitalize",minHeight:44
         }}>{t}</button>
       ))}
     </div>
@@ -1380,9 +1402,12 @@ export default function NoMeChinguen() {
                 letterSpacing:0.3,
                 transition:"all .15s",
                 cursor:"pointer",
+                minHeight:44,
               }}
               onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.2)";e.currentTarget.style.borderColor="rgba(255,255,255,0.35)"}}
               onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.1)";e.currentTarget.style.borderColor="rgba(255,255,255,0.25)"}}
+              onFocus={e=>{ e.currentTarget.style.outline="none"; e.currentTarget.style.boxShadow="0 0 0 2px #DAA520"; }}
+              onBlur={e=>{ e.currentTarget.style.boxShadow=""; }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Descargar volante en PDF">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -1405,13 +1430,13 @@ export default function NoMeChinguen() {
       <nav aria-label="Secciones principales" style={{background:C.surface,borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:10}}>
         <div style={{maxWidth:1200,margin:"0 auto",display:"flex",gap:0,padding:`0 ${px}`,overflowX:mobile?"auto":"visible",WebkitOverflowScrolling:"touch"}}>
           {NAV.map(n=>(
-            <button key={n.id} onClick={()=>setTab(n.id)} aria-current={tab===n.id?"page":undefined} style={{
+            <button key={n.id} onClick={()=>setTab(n.id)} aria-current={tab===n.id?"page":undefined} {...applyFocusLight} style={{
               padding:mobile?"12px 16px":"14px 24px",fontSize:13,fontWeight:tab===n.id?700:500,
               color:tab===n.id?C.primary:C.textSec,
               background:"transparent",border:"none",
               borderBottom:tab===n.id?`3px solid ${C.primary}`:"3px solid transparent",
               cursor:"pointer",fontFamily:font,transition:"all .12s",letterSpacing:0.3,
-              whiteSpace:"nowrap",flexShrink:0
+              whiteSpace:"nowrap",flexShrink:0,minHeight:44
             }}>
               <div>{n.label}</div>
               {!mobile && <div style={{fontSize:10,fontWeight:400,color:tab===n.id?C.secondary:C.border,marginTop:1}}>{n.desc}</div>}
