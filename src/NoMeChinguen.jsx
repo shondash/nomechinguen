@@ -26,13 +26,28 @@ const C = {
   text: "#1F2933",
   textSec: "#52606D",
   border: "#D9E2EC",
-  info: "#2F80ED",
+  info: "#1A63C0",
   success: "#2E7D32",
-  warning: "#C28A2E",
+  warning: "#8A5E10",
   error: "#A63A3A",
 };
 const font = `'DM Sans', sans-serif`;
 const mono = `'Space Mono', monospace`;
+
+// ── Accessibility ──
+const SKIP_LINK_STYLE = {
+  position: "absolute",
+  top: -9999,
+  left: 0,
+  zIndex: 9999,
+  padding: "8px 16px",
+  background: C.primary,
+  color: "#fff",
+  textDecoration: "none",
+  fontSize: 14,
+  fontWeight: 700,
+  fontFamily: font,
+};
 
 // ── Data ──
 const VACATION_TABLE = [[1,12],[2,14],[3,16],[4,18],[5,20],["6–10",22],["11–15",24],["16–20",26],["21–25",28],["26–30",30],["31–35",32]];
@@ -1311,6 +1326,14 @@ export default function NoMeChinguen() {
 
   return (
     <div style={{fontFamily:font,background:C.bg,color:C.text,minHeight:"100vh"}}>
+      <a
+        href="#main-content"
+        style={SKIP_LINK_STYLE}
+        onFocus={e => { e.currentTarget.style.top = "0"; }}
+        onBlur={e => { e.currentTarget.style.top = "-9999px"; }}
+      >
+        Saltar al contenido principal
+      </a>
       <InstallBanner />
       {/* Header */}
       <div style={{background:`linear-gradient(135deg, ${C.primary} 0%, ${C.primaryHover} 100%)`,padding:mobile?"24px 16px 20px":"36px 56px 32px"}}>
@@ -1381,13 +1404,13 @@ export default function NoMeChinguen() {
       </nav>
 
       {/* Content */}
-      <div style={{maxWidth:1200,margin:"0 auto",padding:tab==="guia"?"0":`${mobile?"20px":"36px"} ${px} ${mobile?"40px":"80px"}`}}>
+      <main id="main-content" style={{maxWidth:1200,margin:"0 auto",padding:tab==="guia"?"0":`${mobile?"20px":"36px"} ${px} ${mobile?"40px":"80px"}`}}>
         {tab==="checa"&&<ChecaTab onNav={setTab} mobile={mobile} tone={tone}/>}
         {tab==="guia"&&<GuiaTab mobile={mobile} tone={tone}/>}
         {tab==="calc"&&<CalcTab mobile={mobile}/>}
         {tab==="faq"&&<PreguntasTab mobile={mobile}/>}
         {tab==="recursos"&&<RecursosTab mobile={mobile}/>}
-      </div>
+      </main>
 
       {/* Footer */}
       <footer style={{borderTop:`1px solid ${C.border}`,padding:`20px ${px}`,textAlign:"center",fontSize:12,color:C.textSec}}>
