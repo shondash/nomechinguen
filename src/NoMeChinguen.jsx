@@ -1,5 +1,5 @@
 import { LEGAL_YEAR, SALARIO_MINIMO_DIARIO, UMA_DIARIO, PRIMA_ANTIGUEDAD_TOPE, AGUINALDO_DIAS, PRIMA_VACACIONAL_PCT, PRIMA_DOMINICAL_PCT } from "./constants/legal.js";
-import { toSalarioDia, calcSeniority, getVacationDays, calcPrestaciones, calcFiniquito, calcLiquidacion, calcSDI } from "./utils/calculations.js";
+import { toSalarioDia, calcSeniority, getVacationDays, calcPrestaciones, calcFiniquito, calcLiquidacion, calcSDI, calcComparacion } from "./utils/calculations.js";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRegisterSW } from "virtual:pwa-register/react";
 
@@ -486,6 +486,9 @@ function CalcTab({mobile}) {
   const [showContractual, setShowContractual] = useState(false); // D-04
   const [viewMode, setViewMode] = useState("anual");   // D-11
   const [usaNeto, setUsaNeto] = useState(false);        // gross vs net salary toggle
+  // Comparacion mode state
+  const [salarioRegistrado, setSalarioRegistrado] = useState("");
+  const [usaMinimo, setUsaMinimo] = useState(true); // default ON — fills registrado with SALARIO_MINIMO_DIARIO
 
   // Derived values (D-15)
   const salarioDia = toSalarioDia(salarioAmt, frequency);
@@ -572,6 +575,7 @@ function CalcTab({mobile}) {
         {mBtn("prestaciones","Prestaciones")}
         {mBtn("extras","Horas Extra")}
         {mBtn("despido","Despido / Renuncia")}
+        {mBtn("comparacion","Nomina Real vs Minimo")}
       </div>
 
       {/* Despido / Renuncia mode — full-width comparison (D-12, D-13) */}
@@ -719,8 +723,144 @@ function CalcTab({mobile}) {
         );
       })()}
 
+      {/* Comparacion: Nomina Real vs Minimo — full-width layout */}
+      {mode==="comparacion" && (() => {
+        const sdRegistrado = usaMinimo ? SALARIO_MINIMO_DIARIO : (parseFloat(salarioRegistrado) || 0);
+
+        if (!salarioDia || salarioDia <= 0 || !seniority) {
+          return (
+            <div style={{background:C.surface,border:`2px dashed ${C.border}`,borderRadius:12,padding:40,textAlign:"center",color:C.textSec,fontSize:14}}>
+              Ingresa tu salario y fecha de ingreso arriba
+            </div>
+          );
+        }
+        if (seniority.totalMonths <= 0) {
+          return <Callout type="info">Ingresa al menos un mes de antiguedad.</Callout>;
+        }
+
+        // Registered salary input card
+        const registradoCard = (
+          <div style={{marginBottom:20,padding:16,background:C.surface,border:`1px solid ${C.border}`,borderRadius:10}}>
+            <label style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:10}}>
+              Salario registrado en el IMSS (diario)
+            </label>
+            <label style={{fontSize:13,color:C.textSec,cursor:"pointer",display:"flex",alignItems:"center",gap:8,marginBottom:usaMinimo?0:12}}>
+              <input type="checkbox" checked={usaMinimo}
+                onChange={e=>{setUsaMinimo(e.target.checked);if(e.target.checked)setSalarioRegistrado("");}}
+                style={{width:16,height:16,cursor:"pointer"}}/>
+              Registrado con el minimo (${SALARIO_MINIMO_DIARIO.toFixed(2)}/dia)
+            </label>
+            {!usaMinimo && (
+              <input type="text" inputMode="decimal"
+                value={salarioRegistrado}
+                onChange={e=>setSalarioRegistrado(e.target.value.replace(/[^0-9.]/g,""))}
+                placeholder="Ej: 200"
+                style={inp}/>
+            )}
+          </div>
+        );
+
+        if (salarioDia <= sdRegistrado) {
+          return (
+            <div>
+              {registradoCard}
+              <Callout type="info">Tu salario real es igual o menor al registrado. No hay diferencia que mostrar.</Callout>
+            </div>
+          );
+        }
+
+        const comp = calcComparacion(salarioDia, sdRegistrado, seniority); // comparacion: real vs registrado
+
+        const conceptos = [
+          { label: "Aguinaldo (Art. 87)", key: "aguinaldo" },
+          { label: "Vacaciones (Art. 76)", key: "vacPago" },
+          { label: "Prima Vacacional (Art. 80)", key: "primaVac" },
+          { label: "Liquidacion 3 meses (Art. 48)", key: "liq3meses" },
+          { label: "Liquidacion 20d/anio (Art. 50)", key: "liq20dias" },
+          { label: "Prima Antiguedad (Art. 162)", key: "primaAnt" },
+          { label: "Credito Infonavit (est.)", key: "infonavit" },
+        ];
+
+        const totalReal = Object.values(comp.real).reduce((a,b)=>a+b,0);
+        const totalReg  = Object.values(comp.registrado).reduce((a,b)=>a+b,0);
+
+        return (
+          <div>
+            {registradoCard}
+
+            {/* Desktop table */}
+            {!mobile && (
+              <div style={{background:"#FFF0F0",border:"1px solid #E8A3A3",borderRadius:12,padding:24,marginBottom:20,overflowX:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse"}}>
+                  <thead>
+                    <tr>
+                      {["Concepto","Salario Real","Registrado IMSS","Lo que pierdes"].map((h,i)=>(
+                        <th key={i} style={{fontFamily:mono,fontSize:11,letterSpacing:1.5,color:C.textSec,textAlign:i===0?"left":"right",padding:"0 8px 12px",borderBottom:`1px solid #E8A3A3`}}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {conceptos.map(({label,key})=>(
+                      <tr key={key}>
+                        <td style={{fontSize:13,color:C.text,padding:"8px 8px",borderBottom:`1px solid #F5D5D5`}}>{label}</td>
+                        <td style={{fontSize:13,fontFamily:mono,color:C.text,textAlign:"right",padding:"8px 8px",borderBottom:`1px solid #F5D5D5`}}>{fmt(comp.real[key])}</td>
+                        <td style={{fontSize:13,fontFamily:mono,color:C.text,textAlign:"right",padding:"8px 8px",borderBottom:`1px solid #F5D5D5`}}>{fmt(comp.registrado[key])}</td>
+                        <td style={{fontSize:13,fontFamily:mono,color:C.error,fontWeight:700,textAlign:"right",padding:"8px 8px",borderBottom:`1px solid #F5D5D5`}}>-{fmt(comp.diferencia[key])}</td>
+                      </tr>
+                    ))}
+                    <tr>
+                      <td style={{fontSize:15,fontWeight:700,color:C.text,padding:"14px 8px 0",borderTop:`2px solid #E8A3A3`}}>TOTAL</td>
+                      <td style={{fontSize:15,fontFamily:mono,fontWeight:700,color:C.text,textAlign:"right",padding:"14px 8px 0",borderTop:`2px solid #E8A3A3`}}>{fmt(totalReal)}</td>
+                      <td style={{fontSize:15,fontFamily:mono,fontWeight:700,color:C.text,textAlign:"right",padding:"14px 8px 0",borderTop:`2px solid #E8A3A3`}}>{fmt(totalReg)}</td>
+                      <td style={{fontSize:15,fontFamily:mono,fontWeight:700,color:C.error,textAlign:"right",padding:"14px 8px 0",borderTop:`2px solid #E8A3A3`}}>-{fmt(comp.diferencia.total)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Mobile stacked cards */}
+            {mobile && (
+              <div style={{marginBottom:20}}>
+                <div style={{fontFamily:mono,fontSize:11,color:C.textSec,letterSpacing:1.5,marginBottom:12}}>CONCEPTO POR CONCEPTO</div>
+                {conceptos.map(({label,key})=>(
+                  <div key={key} style={{background:"#FFF0F0",border:"1px solid #E8A3A3",borderRadius:10,padding:14,marginBottom:10}}>
+                    <div style={{fontSize:13,fontWeight:700,color:C.text,marginBottom:8}}>{label}</div>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:C.textSec,marginBottom:4}}>
+                      <span>Salario real</span>
+                      <span style={{fontFamily:mono,color:C.text}}>{fmt(comp.real[key])}</span>
+                    </div>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:C.textSec,marginBottom:4}}>
+                      <span>Registrado IMSS</span>
+                      <span style={{fontFamily:mono,color:C.text}}>{fmt(comp.registrado[key])}</span>
+                    </div>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:700,color:C.error,marginTop:4,paddingTop:6,borderTop:`1px solid #F5D5D5`}}>
+                      <span>Pierdes</span>
+                      <span style={{fontFamily:mono}}>-{fmt(comp.diferencia[key])}</span>
+                    </div>
+                  </div>
+                ))}
+                <div style={{background:"#FFF0F0",border:"2px solid #E8A3A3",borderRadius:10,padding:14}}>
+                  <div style={{display:"flex",justifyContent:"space-between",fontSize:15,fontWeight:700,color:C.error}}>
+                    <span>TOTAL QUE PIERDES</span>
+                    <span style={{fontFamily:mono}}>-{fmt(comp.diferencia.total)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <Callout type="error">
+              Por estar registrado con el minimo, pierdes {fmt(comp.diferencia.total)} en prestaciones y proteccion laboral.
+            </Callout>
+            <Callout type="info">
+              Si tu patron te registra con un salario menor al real ante el IMSS, esta violando el Art. 15 de la Ley del Seguro Social. Puedes denunciarlo ante el IMSS o acudir a PROFEDET (800 911 7877) para asesoria gratuita.
+            </Callout>
+          </div>
+        );
+      })()}
+
       {/* Prestaciones and Horas Extra modes — 2-col layout (inputs | results) */}
-      {mode!=="despido" && (
+      {mode!=="despido" && mode!=="comparacion" && (
       <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"1fr 1fr",gap:mobile?24:40,alignItems:"start"}}>
         {/* Left: mode-specific inputs */}
         <div>
