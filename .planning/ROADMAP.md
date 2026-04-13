@@ -104,7 +104,7 @@ Plans:
 
 Plans:
 - [x] 03-01-PLAN.md — Replace Google Fonts with Fontsource self-hosted WOFF2 packages, generate PWA icon assets
-- [ ] 03-02-PLAN.md — Configure vite-plugin-pwa (manifest + service worker + precaching), add update notification toast
+- [x] 03-02-PLAN.md — Configure vite-plugin-pwa (manifest + service worker + precaching), add update notification toast
 
 ### Phase 4: Accessibility and Performance
 **Goal**: Every worker can use the app regardless of disability or device capability — keyboard users, screen reader users, low-vision users, and workers on budget Androids with 3G connections
@@ -119,6 +119,23 @@ Plans:
 **Plans**: TBD
 **UI hint**: yes
 
+### Phase 5: Salary Comparison Calculator
+**Goal**: A worker who earns more than minimum wage can see exactly how much they lose in benefits and protections when their employer registers them at the minimum instead of their real salary — exposing the true cost of "te registro con el minimo"
+**Depends on**: Phase 02.1 (uses calculation functions from Full Compensation Calculator)
+**Requirements**: COMP-01, COMP-02, COMP-03, COMP-04, COMP-05, COMP-06, COMP-07, COMP-08
+**Success Criteria** (what must be TRUE):
+  1. Worker enters real salary and registered salary (with quick toggle for salario minimo $315.04)
+  2. Side-by-side comparison table shows amounts for all concepts under both salary scenarios
+  3. Difference column highlights losses in red for each concept
+  4. Concepts covered: aguinaldo, vacaciones, prima vacacional, liquidacion (3 meses + 20 dias/anio), prima de antiguedad, Infonavit credit estimate
+  5. All calculations reuse existing functions from src/utils/calculations.js
+  6. New mode integrates into existing CalcTab alongside Prestaciones, Horas Extra, Despido/Renuncia
+**Plans:** 2/2 plans complete
+
+Plans:
+- [x] 05-01-PLAN.md — Add calcInfonavitCredit and calcComparacion to calculations.js with unit tests
+- [x] 05-02-PLAN.md — Add Comparacion mode to CalcTab with comparison table UI and visual verification
+
 ## Progress
 
 **Execution Order:**
@@ -130,3 +147,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 2. Deployment Foundation | 0/2 | Planned | - |
 | 3. PWA Core | 0/2 | Planned | - |
 | 4. Accessibility and Performance | 0/TBD | Not started | - |
+| 5. Salary Comparison Calculator | 2/2 | Complete   | 2026-04-13 |
