@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Legal Verification** - Verify every LFT article reference, monetary value, and contact against current law before anything ships (completed 2026-04-06)
 - [ ] **Phase 2: Deployment Foundation** - Live site on nomechinguen.com.mx with HTTPS, correct Spanish OG cards for WhatsApp, and critical cache headers
 - [ ] **Phase 3: PWA Core** - Installable offline-first app: self-hosted fonts, service worker, manifest, and icons
-- [ ] **Phase 4: Accessibility and Performance** - WCAG 2.2 AA compliance and LCP under 2.5s on throttled 3G confirmed before public promotion
+- [x] **Phase 4: Accessibility and Performance** - WCAG 2.2 AA compliance and LCP under 2.5s on throttled 3G confirmed before public promotion (completed 2026-04-13)
 
 ## Phase Details
 
@@ -116,12 +116,12 @@ Plans:
   3. Lighthouse mobile audit run on the deployed Cloudflare URL shows LCP under 2.5s and a PWA score of 90 or higher
   4. Total JS bundle is under 200KB gzipped (confirmed via bundle analyzer output)
   5. VoiceOver or TalkBack announces the tone toggle state (pressed/not pressed), FAQ accordion state (expanded/collapsed), and calculator input labels correctly
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 **UI hint**: yes
 
 Plans:
-- [ ] 04-01-PLAN.md — Keyboard access, ARIA attributes, skip-to-content link, color contrast fixes
-- [ ] 04-02-PLAN.md — Focus ring indicators, touch target sizing, Lighthouse performance verification
+- [x] 04-01-PLAN.md — Keyboard access, ARIA attributes, skip-to-content link, color contrast fixes
+- [x] 04-02-PLAN.md — Focus ring indicators, touch target sizing, Lighthouse performance verification
 
 ### Phase 5: Salary Comparison Calculator
 **Goal**: A worker who earns more than minimum wage can see exactly how much they lose in benefits and protections when their employer registers them at the minimum instead of their real salary — exposing the true cost of "te registro con el minimo"
@@ -150,5 +150,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Legal Verification | 2/2 | Complete    | 2026-04-06 |
 | 2. Deployment Foundation | 0/2 | Planned | - |
 | 3. PWA Core | 0/2 | Planned | - |
-| 4. Accessibility and Performance | 0/2 | Planned | - |
+| 4. Accessibility and Performance | 2/2 | Complete   | 2026-04-13 |
 | 5. Salary Comparison Calculator | 2/2 | Complete   | 2026-04-13 |
