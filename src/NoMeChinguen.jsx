@@ -26,13 +26,28 @@ const C = {
   text: "#1F2933",
   textSec: "#52606D",
   border: "#D9E2EC",
-  info: "#2F80ED",
+  info: "#1A63C0",
   success: "#2E7D32",
-  warning: "#C28A2E",
+  warning: "#8A5E10",
   error: "#A63A3A",
 };
 const font = `'DM Sans', sans-serif`;
 const mono = `'Space Mono', monospace`;
+
+// ── Accessibility ──
+const SKIP_LINK_STYLE = {
+  position: "absolute",
+  top: -9999,
+  left: 0,
+  zIndex: 9999,
+  padding: "8px 16px",
+  background: C.primary,
+  color: "#fff",
+  textDecoration: "none",
+  fontSize: 14,
+  fontWeight: 700,
+  fontFamily: font,
+};
 
 // ── Data ──
 const VACATION_TABLE = [[1,12],[2,14],[3,16],[4,18],[5,20],["6–10",22],["11–15",24],["16–20",26],["21–25",28],["26–30",30],["31–35",32]];
@@ -205,7 +220,9 @@ function ChecaTab({onNav, mobile, tone}) {
                     const bad = selected && opt === item.bad;
                     const good = selected && opt !== item.bad;
                     return (
-                      <button key={opt} onClick={()=>toggle(i,opt)} style={{
+                      <button key={opt} onClick={()=>toggle(i,opt)}
+                        aria-label={`${opt==="si"?"Sí":"No"} — ${item.q}`}
+                        style={{
                         flex:1,padding:"8px 0",fontSize:14,fontWeight:600,borderRadius:6,cursor:"pointer",
                         border:selected?"none":`1.5px solid ${C.border}`,
                         background:bad?C.error:good?C.success:C.surface,
@@ -442,15 +459,17 @@ function GuiaTab({mobile, tone}) {
       {/* Chapter sidebar */}
       <div style={{width:240,flexShrink:0,borderRight:`1px solid ${C.border}`,paddingTop:8}}>
         {CHAPTERS.map(c=>(
-          <div key={c.id} onClick={()=>setActive(c.id)} style={{
+          <button key={c.id} onClick={()=>setActive(c.id)} style={{
+            display:"block",width:"100%",textAlign:"left",
             padding:"10px 20px",cursor:"pointer",
             background:active===c.id?C.surface:"transparent",
             borderLeft:active===c.id?`3px solid ${C.primary}`:"3px solid transparent",
-            transition:"all .12s"
+            borderTop:"none",borderRight:"none",borderBottom:"none",
+            fontFamily:font,transition:"all .12s"
           }}>
             <div style={{fontFamily:mono,fontSize:9,color:C.secondary,letterSpacing:1.2,textTransform:"uppercase"}}>Cap. {c.ch}</div>
             <div style={{fontSize:13,fontWeight:active===c.id?700:500,color:active===c.id?C.primary:C.textSec,marginTop:1}}>{c.title}</div>
-          </div>
+          </button>
         ))}
       </div>
       {/* Chapter content */}
@@ -533,13 +552,13 @@ function CalcTab({mobile}) {
         )}
         <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"1fr 1fr",gap:16,marginBottom:16}}>
           <div>
-            <label style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>{usaNeto?"Tu salario neto ($)":"Tu salario bruto ($)"}</label>
-            <input type="text" inputMode="decimal" value={salarioAmt} onChange={e=>{const v=e.target.value.replace(/[^0-9.]/g,"");setSalarioAmt(v);}} placeholder={usaNeto?"Ej: 10000":"Ej: 12000"} style={{...inp,...(salarioAmt&&!parseFloat(salarioAmt)?{borderColor:C.error}:{})}}/>
+            <label htmlFor="calc-salary" style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>{usaNeto?"Tu salario neto ($)":"Tu salario bruto ($)"}</label>
+            <input id="calc-salary" type="text" inputMode="decimal" value={salarioAmt} onChange={e=>{const v=e.target.value.replace(/[^0-9.]/g,"");setSalarioAmt(v);}} placeholder={usaNeto?"Ej: 10000":"Ej: 12000"} aria-label={usaNeto?"Salario neto en pesos":"Salario bruto en pesos"} style={{...inp,...(salarioAmt&&!parseFloat(salarioAmt)?{borderColor:C.error}:{})}}/>
             {salarioAmt&&!parseFloat(salarioAmt)&&<div style={{fontSize:12,color:C.error,marginTop:4}}>Ingresa solo numeros</div>}
           </div>
           <div>
-            <label style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>Frecuencia de pago</label>
-            <select value={frequency} onChange={e=>setFrequency(e.target.value)} style={{...inp,appearance:"auto"}}>
+            <label htmlFor="calc-frequency" style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>Frecuencia de pago</label>
+            <select id="calc-frequency" aria-label="Frecuencia de pago" value={frequency} onChange={e=>setFrequency(e.target.value)} style={{...inp,appearance:"auto"}}>
               <option value="diario">Diario</option>
               <option value="semanal">Semanal</option>
               <option value="quincenal">Quincenal</option>
@@ -549,15 +568,15 @@ function CalcTab({mobile}) {
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
           <div>
-            <label style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>Mes de ingreso</label>
-            <select value={startMonth} onChange={e=>setStartMonth(e.target.value)} style={{...inp,appearance:"auto"}}>
+            <label htmlFor="calc-start-month" style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>Mes de ingreso</label>
+            <select id="calc-start-month" aria-label="Mes de ingreso" value={startMonth} onChange={e=>setStartMonth(e.target.value)} style={{...inp,appearance:"auto"}}>
               <option value="">-- Mes --</option>
               {MONTHS.map((m,i)=><option key={i} value={i+1}>{m}</option>)}
             </select>
           </div>
           <div>
-            <label style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>Año de ingreso</label>
-            <select value={startYear} onChange={e=>setStartYear(e.target.value)} style={{...inp,appearance:"auto"}}>
+            <label htmlFor="calc-start-year" style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>Año de ingreso</label>
+            <select id="calc-start-year" aria-label="Anio de ingreso" value={startYear} onChange={e=>setStartYear(e.target.value)} style={{...inp,appearance:"auto"}}>
               <option value="">-- Año --</option>
               {YEARS.map(y=><option key={y} value={y}>{y}</option>)}
             </select>
@@ -758,6 +777,7 @@ function CalcTab({mobile}) {
                 value={salarioRegistrado}
                 onChange={e=>setSalarioRegistrado(e.target.value.replace(/[^0-9.]/g,""))}
                 placeholder="Ej: 200"
+                aria-label="Salario diario registrado en el IMSS"
                 style={inp}/>
             )}
           </div>
@@ -870,12 +890,12 @@ function CalcTab({mobile}) {
           {mode==="extras" && (
             <div>
               <div style={{marginBottom:16}}>
-                <label style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>Horas extra en la semana</label>
-                <input type="number" value={horasExtra} onChange={e=>setHorasExtra(e.target.value)} placeholder="Ej: 12" style={inp}/>
+                <label htmlFor="calc-horas-extra" style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>Horas extra en la semana</label>
+                <input id="calc-horas-extra" type="number" value={horasExtra} onChange={e=>setHorasExtra(e.target.value)} placeholder="Ej: 12" aria-label="Horas extra trabajadas en la semana" style={inp}/>
               </div>
               <div style={{marginBottom:16}}>
-                <label style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>Tipo de jornada</label>
-                <select value={jornada} onChange={e=>setJornada(e.target.value)} style={{...inp,appearance:"auto"}}>
+                <label htmlFor="calc-jornada" style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>Tipo de jornada</label>
+                <select id="calc-jornada" aria-label="Tipo de jornada laboral" value={jornada} onChange={e=>setJornada(e.target.value)} style={{...inp,appearance:"auto"}}>
                   <option value="8">Diurna (8 hrs)</option>
                   <option value="7">Nocturna (7 hrs)</option>
                   <option value="7.5">Mixta (7.5 hrs)</option>
@@ -892,8 +912,8 @@ function CalcTab({mobile}) {
                 </label>
               </div>
               <div style={{marginBottom:16}}>
-                <label style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>PTU recibida (opcional)</label>
-                <input type="number" value={ptuAmt} onChange={e=>setPtuAmt(e.target.value)} placeholder="Monto de tu ultimo recibo de PTU" style={inp}/>
+                <label htmlFor="calc-ptu" style={{fontSize:13,fontWeight:600,color:C.text,display:"block",marginBottom:6}}>PTU recibida (opcional)</label>
+                <input id="calc-ptu" type="number" value={ptuAmt} onChange={e=>setPtuAmt(e.target.value)} placeholder="Monto de tu ultimo recibo de PTU" aria-label="Monto de PTU recibida" style={inp}/>
                 {(!ptuAmt || parseFloat(ptuAmt)===0) && (
                   <Callout type="info">La PTU es el 10% de las utilidades de tu empresa, repartido entre todos los trabajadores. Se paga en mayo. Si tu empresa tuvo ganancias, tienes derecho a recibirla. Pide tu comprobante de pago de PTU.</Callout>
                 )}
@@ -1079,12 +1099,25 @@ function PreguntasTab({mobile}) {
       <Hr/>
       <div style={{display:"grid",gridTemplateColumns:mobile?"1fr":"1fr 1fr",gap:"0 32px"}}>
         {FAQS.map(([q,a],i)=>(
-          <div key={i} style={{borderBottom:`1px solid ${C.border}`,padding:"16px 0",cursor:"pointer"}} onClick={()=>setOpenIdx(openIdx===i?null:i)}>
-            <div style={{fontSize:15,fontWeight:600,color:C.text,display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10}}>
+          <div key={i} style={{borderBottom:`1px solid ${C.border}`,padding:"16px 0"}}>
+            <div
+              role="button"
+              tabIndex={0}
+              aria-expanded={openIdx===i}
+              aria-controls={`faq-answer-${i}`}
+              onClick={()=>setOpenIdx(openIdx===i?null:i)}
+              onKeyDown={e => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setOpenIdx(openIdx===i?null:i);
+                }
+              }}
+              style={{fontSize:15,fontWeight:600,color:C.text,display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,cursor:"pointer"}}
+            >
               <span>{q}</span>
               <span style={{color:C.secondary,fontSize:14,transform:openIdx===i?"rotate(180deg)":"none",transition:"transform .2s",flexShrink:0,marginTop:3}}>▾</span>
             </div>
-            {openIdx===i&&<div style={{fontSize:14,lineHeight:1.65,color:C.textSec,marginTop:12}}>{a}</div>}
+            {openIdx===i&&<div id={`faq-answer-${i}`} role="region" style={{fontSize:14,lineHeight:1.65,color:C.textSec,marginTop:12}}>{a}</div>}
           </div>
         ))}
       </div>
@@ -1181,11 +1214,10 @@ function InstallBanner() {
         gap: 12,
         fontFamily: font,
         fontSize: 13,
-        cursor: "pointer"
-      }} onClick={handleInstall}>
+      }}>
         <span style={{ fontSize: 18 }}>📲</span>
         <span>Instala la app — funciona sin internet</span>
-        <button style={{
+        <button onClick={handleInstall} style={{
           background: "#F5F1EB", color: C.primary, border: "none",
           borderRadius: 6, padding: "5px 12px", fontWeight: 700,
           fontFamily: font, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap"
@@ -1297,7 +1329,7 @@ export default function NoMeChinguen() {
     <div style={{display:"flex",alignItems:"center",gap:8}}>
       <span style={{fontSize:10,fontWeight:600,color:"#DAA520",fontFamily:mono,letterSpacing:1.5,textTransform:"uppercase"}}>Tono</span>
       {["directo","tranquilo"].map(t=>(
-        <button key={t} onClick={()=>setTone(t)} style={{
+        <button key={t} onClick={()=>setTone(t)} aria-pressed={tone===t} style={{
           padding:"5px 14px",fontSize:11,fontWeight:tone===t?700:400,
           background:tone===t?"rgba(255,255,255,0.2)":"transparent",
           color:tone===t?"#fff":"rgba(255,255,255,0.45)",
@@ -1311,6 +1343,14 @@ export default function NoMeChinguen() {
 
   return (
     <div style={{fontFamily:font,background:C.bg,color:C.text,minHeight:"100vh"}}>
+      <a
+        href="#main-content"
+        style={SKIP_LINK_STYLE}
+        onFocus={e => { e.currentTarget.style.top = "0"; }}
+        onBlur={e => { e.currentTarget.style.top = "-9999px"; }}
+      >
+        Saltar al contenido principal
+      </a>
       <InstallBanner />
       {/* Header */}
       <div style={{background:`linear-gradient(135deg, ${C.primary} 0%, ${C.primaryHover} 100%)`,padding:mobile?"24px 16px 20px":"36px 56px 32px"}}>
@@ -1381,13 +1421,13 @@ export default function NoMeChinguen() {
       </nav>
 
       {/* Content */}
-      <div style={{maxWidth:1200,margin:"0 auto",padding:tab==="guia"?"0":`${mobile?"20px":"36px"} ${px} ${mobile?"40px":"80px"}`}}>
+      <main id="main-content" style={{maxWidth:1200,margin:"0 auto",padding:tab==="guia"?"0":`${mobile?"20px":"36px"} ${px} ${mobile?"40px":"80px"}`}}>
         {tab==="checa"&&<ChecaTab onNav={setTab} mobile={mobile} tone={tone}/>}
         {tab==="guia"&&<GuiaTab mobile={mobile} tone={tone}/>}
         {tab==="calc"&&<CalcTab mobile={mobile}/>}
         {tab==="faq"&&<PreguntasTab mobile={mobile}/>}
         {tab==="recursos"&&<RecursosTab mobile={mobile}/>}
-      </div>
+      </main>
 
       {/* Footer */}
       <footer style={{borderTop:`1px solid ${C.border}`,padding:`20px ${px}`,textAlign:"center",fontSize:12,color:C.textSec}}>
