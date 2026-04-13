@@ -156,3 +156,62 @@ export function calcLiquidacion(salarioDia, seniority) {
 
   return { t3, v20, primaAnt, total: t3 + v20 + primaAnt }
 }
+
+// ── calcInfonavitCredit ──
+// Estimates accumulated Infonavit subcuenta de vivienda balance
+// Legal basis: Ley del Infonavit Art. 29 fraccion II
+// Patron contributes 5% of SDI to worker's subcuenta de vivienda
+// Note: Linear accumulation model — ignores rendimientos (appropriate for education tool)
+export function calcInfonavitCredit(salarioDia, completedYears) {
+  const sd = parseFloat(salarioDia) || 0
+  if (completedYears <= 0) return 0
+  const { sdi } = calcSDI(sd, completedYears)
+  // Art. 29-II: patron contributes 5% of SBC (= SDI) — bimestral, shown annually here
+  const annual = sdi * 365 * 0.05
+  return annual * completedYears  // linear accumulation, ignores rendimientos
+}
+
+// ── calcComparacion ──
+// Side-by-side comparison of all benefit concepts under real vs registered salary
+// Reuses calcPrestaciones, calcLiquidacion, calcInfonavitCredit — no formula duplication (D-07)
+// Returns { real, registrado, diferencia } each with all six concepts + infonavit
+export function calcComparacion(salarioReal, salarioRegistrado, seniority) {
+  const sdReal = parseFloat(salarioReal) || 0
+  const sdReg  = parseFloat(salarioRegistrado) || 0
+  const { completedYears } = seniority
+
+  const prestReal = calcPrestaciones(sdReal, seniority, false)
+  const prestReg  = calcPrestaciones(sdReg, seniority, false)
+  const liqReal   = calcLiquidacion(sdReal, seniority)
+  const liqReg    = calcLiquidacion(sdReg, seniority)
+  const infoReal  = calcInfonavitCredit(sdReal, completedYears)
+  const infoReg   = calcInfonavitCredit(sdReg, completedYears)
+
+  const real = {
+    aguinaldo: prestReal.aguinaldo,
+    vacPago:   prestReal.vacPago,
+    primaVac:  prestReal.primaVac,
+    liq3meses: liqReal.t3,
+    liq20dias: liqReal.v20,
+    primaAnt:  liqReal.primaAnt,
+    infonavit: infoReal,
+  }
+  const registrado = {
+    aguinaldo: prestReg.aguinaldo,
+    vacPago:   prestReg.vacPago,
+    primaVac:  prestReg.primaVac,
+    liq3meses: liqReg.t3,
+    liq20dias: liqReg.v20,
+    primaAnt:  liqReg.primaAnt,
+    infonavit: infoReg,
+  }
+
+  const fields = ['aguinaldo', 'vacPago', 'primaVac', 'liq3meses', 'liq20dias', 'primaAnt', 'infonavit']
+  const diferencia = { total: 0 }
+  for (const f of fields) {
+    diferencia[f] = real[f] - registrado[f]
+    diferencia.total += diferencia[f]
+  }
+
+  return { real, registrado, diferencia }
+}
